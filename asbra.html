@@ -46,12 +46,20 @@
             const userLatitude = position.coords.latitude;
             const userLongitude = position.coords.longitude;
 
+            console.log("Latitude do usuário: ", userLatitude);
+            console.log("Longitude do usuário: ", userLongitude);
+
             // Coordenadas da Asbra (R. João Teodoro, 238 - Luz, São Paulo - SP, 01105-000)
             const targetLatitude = -23.5264076;
             const targetLongitude = -46.6333946;
 
+            console.log("Latitude do destino: ", targetLatitude);
+            console.log("Longitude do destino: ", targetLongitude);
+
             // Verifica se o usuário está dentro de um raio de 20 metros
             const distance = calculateDistance(userLatitude, userLongitude, targetLatitude, targetLongitude);
+
+            console.log("Distância calculada: ", distance);
 
             const messageElement = document.getElementById("message");
             if (distance <= 0.02) { // 0.02 km é equivalente a 20 metros
