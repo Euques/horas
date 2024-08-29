@@ -76,7 +76,7 @@
                 const distanceInMeters = distance * 1000; // Converter km para metros
 
                 if (distanceInMeters <= 20) { // 20 metros
-                    messageElement.textContent = "Você está participando da Promoção!";
+                    messageElement.textContent = `Você está ${distanceToGoal} participando da Promoção!`;
                     messageElement.className = "green";
                 } else {
                     const distanceToGoal = (distanceInMeters - 20).toFixed(2);
