@@ -55,8 +55,19 @@
         const messageElement = document.getElementById("message");
         const toggleButton = document.getElementById("toggleButton");
 
+        function requestLocationPermission() {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    // Inicia o monitoramento da localização após a permissão ser concedida
+                    startWatchingLocation();
+                },
+                errorCallback,
+                { enableHighAccuracy: true }
+            );
+        }
+
         function startWatchingLocation() {
-            if (navigator.geolocation) {
+            if (!watchId) {
                 watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, {
                     enableHighAccuracy: true,
                     timeout: 5000,
@@ -64,8 +75,6 @@
                 });
                 toggleButton.textContent = "Desligar Localização";
                 messageElement.textContent = "Verificando sua localização...";
-            } else {
-                messageElement.textContent = "Geolocalização não é suportada pelo seu navegador.";
             }
         }
 
@@ -125,22 +134,9 @@
             if (watchId) {
                 stopWatchingLocation();
             } else {
-                // Solicitar permissão de localização antes de ativar o monitoramento
-                navigator.geolocation.getCurrentPosition(startWatchingLocation, errorCallback);
+                requestLocationPermission();
             }
         });
-
-        // Para garantir que a função `startWatchingLocation` seja chamada se a permissão já for concedida
-        function startWatchingLocation() {
-            stopWatchingLocation(); // Parar qualquer watchId anterior antes de iniciar um novo
-            watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
-            });
-            toggleButton.textContent = "Desligar Localização";
-            messageElement.textContent = "Verificando sua localização...";
-        }
     </script>
 </body>
 </html>
