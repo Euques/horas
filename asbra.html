@@ -10,6 +10,7 @@
             color: #fff;
             font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -21,6 +22,15 @@
             font-size: 2em;
             padding: 20px;
             border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        #toggleButton {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .green {
@@ -34,22 +44,39 @@
 </head>
 <body>
     <div id="message">Verificando sua localização...</div>
+    <button id="toggleButton">Desligar Localização</button>
 
     <script>
         let userLatitude;
         let userLongitude;
+        let watchId;
 
         const targetLatitude = -23.5332;
         const targetLongitude = -46.630237;
 
-        if (navigator.geolocation) {
-            navigator.geolocation.watchPosition(successCallback, errorCallback, {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
-            });
-        } else {
-            document.getElementById("message").textContent = "Geolocalização não é suportada pelo seu navegador.";
+        const messageElement = document.getElementById("message");
+        const toggleButton = document.getElementById("toggleButton");
+
+        function startWatchingLocation() {
+            if (navigator.geolocation) {
+                watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                });
+                toggleButton.textContent = "Desligar Localização";
+            } else {
+                messageElement.textContent = "Geolocalização não é suportada pelo seu navegador.";
+            }
+        }
+
+        function stopWatchingLocation() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+                messageElement.textContent = "Localização desligada.";
+                toggleButton.textContent = "Ligar Localização";
+            }
         }
 
         function successCallback(position) {
@@ -64,7 +91,7 @@
 
         function errorCallback(error) {
             console.error(error);
-            document.getElementById("message").textContent = "Erro ao obter localização.";
+            messageElement.textContent = "Erro ao obter localização.";
         }
 
         function updateDistance() {
@@ -72,7 +99,6 @@
                 const distance = calculateDistance(userLatitude, userLongitude, targetLatitude, targetLongitude);
                 console.log("Distância calculada: ", distance);
 
-                const messageElement = document.getElementById("message");
                 const distanceInMeters = distance * 1000; // Converter km para metros
 
                 if (distanceInMeters <= 20) { // 20 metros
@@ -105,6 +131,18 @@
         function degreesToRadians(degrees) {
             return degrees * (Math.PI / 180);
         }
+
+        // Adicionar evento ao botão
+        toggleButton.addEventListener("click", function() {
+            if (watchId) {
+                stopWatchingLocation();
+            } else {
+                startWatchingLocation();
+            }
+        });
+
+        // Iniciar a verificação da localização automaticamente
+        startWatchingLocation();
     </script>
 </body>
 </html>
