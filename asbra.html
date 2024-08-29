@@ -43,12 +43,10 @@
     </style>
 </head>
 <body>
-    <div id="message">Verificando sua localização...</div>
-    <button id="toggleButton">Desligar Localização</button>
+    <div id="message">Localização desligada.</div>
+    <button id="toggleButton">Ligar Localização</button>
 
     <script>
-        let userLatitude;
-        let userLongitude;
         let watchId;
 
         const targetLatitude = -23.5332;
@@ -57,18 +55,8 @@
         const messageElement = document.getElementById("message");
         const toggleButton = document.getElementById("toggleButton");
 
-        function requestLocationPermission() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(() => {
-                    startWatchingLocation();
-                }, errorCallback);
-            } else {
-                messageElement.textContent = "Geolocalização não é suportada pelo seu navegador.";
-            }
-        }
-
         function startWatchingLocation() {
-            if (!watchId) {
+            if (navigator.geolocation) {
                 watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, {
                     enableHighAccuracy: true,
                     timeout: 5000,
@@ -76,6 +64,8 @@
                 });
                 toggleButton.textContent = "Desligar Localização";
                 messageElement.textContent = "Verificando sua localização...";
+            } else {
+                messageElement.textContent = "Geolocalização não é suportada pelo seu navegador.";
             }
         }
 
@@ -89,36 +79,25 @@
         }
 
         function successCallback(position) {
-            userLatitude = position.coords.latitude;
-            userLongitude = position.coords.longitude;
+            const userLatitude = position.coords.latitude;
+            const userLongitude = position.coords.longitude;
 
-            console.log("Latitude do usuário: ", userLatitude);
-            console.log("Longitude do usuário: ", userLongitude);
+            const distance = calculateDistance(userLatitude, userLongitude, targetLatitude, targetLongitude);
+            const distanceInMeters = distance * 1000; // Converter km para metros
 
-            updateDistance();
+            if (distanceInMeters <= 20) { // 20 metros
+                messageElement.textContent = "Você está participando da Promoção!";
+                messageElement.className = "green";
+            } else {
+                const distanceToGoal = (distanceInMeters - 20).toFixed(2);
+                messageElement.textContent = `Você precisa estar no raio de 20 metros da promoção, faltam ${distanceToGoal} metros para participar.`;
+                messageElement.className = "red";
+            }
         }
 
         function errorCallback(error) {
             console.error(error);
             messageElement.textContent = "Erro ao obter localização.";
-        }
-
-        function updateDistance() {
-            if (userLatitude !== undefined && userLongitude !== undefined) {
-                const distance = calculateDistance(userLatitude, userLongitude, targetLatitude, targetLongitude);
-                console.log("Distância calculada: ", distance);
-
-                const distanceInMeters = distance * 1000; // Converter km para metros
-
-                if (distanceInMeters <= 20) { // 20 metros
-                    messageElement.textContent = "Você está participando da Promoção!";
-                    messageElement.className = "green";
-                } else {
-                    const distanceToGoal = (distanceInMeters - 20).toFixed(2);
-                    messageElement.textContent = `Você precisa estar no raio de 20 metros da promoção, faltam ${distanceToGoal} metros para participar.`;
-                    messageElement.className = "red";
-                }
-            }
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -146,13 +125,22 @@
             if (watchId) {
                 stopWatchingLocation();
             } else {
-                requestLocationPermission();
+                // Solicitar permissão de localização antes de ativar o monitoramento
+                navigator.geolocation.getCurrentPosition(startWatchingLocation, errorCallback);
             }
         });
 
-        // Iniciar a verificação da localização automaticamente
-        requestLocationPermission();
+        // Para garantir que a função `startWatchingLocation` seja chamada se a permissão já for concedida
+        function startWatchingLocation() {
+            stopWatchingLocation(); // Parar qualquer watchId anterior antes de iniciar um novo
+            watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+            toggleButton.textContent = "Desligar Localização";
+            messageElement.textContent = "Verificando sua localização...";
+        }
     </script>
 </body>
 </html>
-``
