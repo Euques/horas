@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Localização Asbra</title>
+    <title>Localização Promoção</title>
     <style>
         body {
             background-color: #000;
@@ -40,7 +40,7 @@
         let userLongitude;
 
         const targetLatitude = -23.5332;
-        const targetLongitude = -46.630237
+        const targetLongitude = -46.630237;
 
         if (navigator.geolocation) {
             navigator.geolocation.watchPosition(successCallback, errorCallback, {
@@ -73,11 +73,14 @@
                 console.log("Distância calculada: ", distance);
 
                 const messageElement = document.getElementById("message");
-                if (distance <= 0.02) { // 0.02 km é equivalente a 20 metros
-                    messageElement.textContent = `Você está a ${distance.toFixed(2)} km da Asbra.`;
+                const distanceInMeters = distance * 1000; // Converter km para metros
+
+                if (distanceInMeters <= 20) { // 20 metros
+                    messageElement.textContent = "Você está participando da Promoção!";
                     messageElement.className = "green";
                 } else {
-                    messageElement.textContent = `Você está a ${distance.toFixed(2)} km da Asbra.`;
+                    const distanceToGoal = (distanceInMeters - 20).toFixed(2);
+                    messageElement.textContent = `Você precisa estar no raio de 20 metros da promoção, faltam ${distanceToGoal} metros para participar.`;
                     messageElement.className = "red";
                 }
             }
