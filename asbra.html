@@ -57,8 +57,18 @@
         const messageElement = document.getElementById("message");
         const toggleButton = document.getElementById("toggleButton");
 
-        function startWatchingLocation() {
+        function requestLocationPermission() {
             if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(() => {
+                    startWatchingLocation();
+                }, errorCallback);
+            } else {
+                messageElement.textContent = "Geolocalização não é suportada pelo seu navegador.";
+            }
+        }
+
+        function startWatchingLocation() {
+            if (!watchId) {
                 watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, {
                     enableHighAccuracy: true,
                     timeout: 5000,
@@ -66,8 +76,6 @@
                 });
                 toggleButton.textContent = "Desligar Localização";
                 messageElement.textContent = "Verificando sua localização...";
-            } else {
-                messageElement.textContent = "Geolocalização não é suportada pelo seu navegador.";
             }
         }
 
@@ -138,12 +146,13 @@
             if (watchId) {
                 stopWatchingLocation();
             } else {
-                startWatchingLocation();
+                requestLocationPermission();
             }
         });
 
         // Iniciar a verificação da localização automaticamente
-        startWatchingLocation();
+        requestLocationPermission();
     </script>
 </body>
 </html>
+``
