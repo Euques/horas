@@ -10,7 +10,6 @@
             color: #fff;
             font-family: Arial, sans-serif;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -22,15 +21,6 @@
             font-size: 2em;
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        #toggleButton {
-            padding: 10px 20px;
-            font-size: 1.2em;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
         }
 
         .green {
@@ -43,73 +33,57 @@
     </style>
 </head>
 <body>
-    <div id="message">Localização desligada.</div>
-    <button id="toggleButton">Ligar Localização</button>
+    <div id="message">Verificando sua localização...</div>
 
     <script>
-        let watchId;
+        let userLatitude;
+        let userLongitude;
 
         const targetLatitude = -23.5332;
         const targetLongitude = -46.630237;
 
-        const messageElement = document.getElementById("message");
-        const toggleButton = document.getElementById("toggleButton");
-
-        function requestLocationPermission() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    () => {
-                        startWatchingLocation(); // Iniciar o monitoramento contínuo após a permissão
-                    },
-                    errorCallback,
-                    { enableHighAccuracy: true }
-                );
-            } else {
-                messageElement.textContent = "Geolocalização não é suportada pelo seu navegador.";
-            }
-        }
-
-        function startWatchingLocation() {
-            if (!watchId) {
-                watchId = navigator.geolocation.watchPosition(successCallback, errorCallback, {
-                    enableHighAccuracy: true,
-                    timeout: 5000,
-                    maximumAge: 0
-                });
-                toggleButton.textContent = "Desligar Localização";
-                messageElement.textContent = "Verificando sua localização...";
-            }
-        }
-
-        function stopWatchingLocation() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-                messageElement.textContent = "Localização desligada.";
-                toggleButton.textContent = "Ligar Localização";
-            }
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(successCallback, errorCallback, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        } else {
+            document.getElementById("message").textContent = "Geolocalização não é suportada pelo seu navegador.";
         }
 
         function successCallback(position) {
-            const userLatitude = position.coords.latitude;
-            const userLongitude = position.coords.longitude;
+            userLatitude = position.coords.latitude;
+            userLongitude = position.coords.longitude;
 
-            const distance = calculateDistance(userLatitude, userLongitude, targetLatitude, targetLongitude);
-            const distanceInMeters = distance * 1000; // Converter km para metros
+            console.log("Latitude do usuário: ", userLatitude);
+            console.log("Longitude do usuário: ", userLongitude);
 
-            if (distanceInMeters <= 20) { // 20 metros
-                messageElement.textContent = "Você está participando da Promoção!";
-                messageElement.className = "green";
-            } else {
-                const distanceToGoal = (distanceInMeters - 20).toFixed(2);
-                messageElement.textContent = `Você precisa estar no raio de 20 metros da promoção, faltam ${distanceToGoal} metros para participar.`;
-                messageElement.className = "red";
-            }
+            updateDistance();
         }
 
         function errorCallback(error) {
             console.error(error);
-            messageElement.textContent = "Erro ao obter localização.";
+            document.getElementById("message").textContent = "Erro ao obter localização.";
+        }
+
+        function updateDistance() {
+            if (userLatitude !== undefined && userLongitude !== undefined) {
+                const distance = calculateDistance(userLatitude, userLongitude, targetLatitude, targetLongitude);
+                console.log("Distância calculada: ", distance);
+
+                const messageElement = document.getElementById("message");
+                const distanceInMeters = distance * 1000; // Converter km para metros
+
+                if (distanceInMeters <= 20) { // 20 metros
+                    messageElement.textContent = "Você está participando da Promoção!";
+                    messageElement.className = "green";
+                } else {
+                    const distanceToGoal = (distanceInMeters - 20).toFixed(2);
+                    messageElement.textContent = `Você precisa estar no raio de 20 metros da promoção, faltam ${distanceToGoal} metros para participar.`;
+                    messageElement.className = "red";
+                }
+            }
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -131,15 +105,7 @@
         function degreesToRadians(degrees) {
             return degrees * (Math.PI / 180);
         }
-
-        // Adicionar evento ao botão
-        toggleButton.addEventListener("click", function() {
-            if (watchId) {
-                stopWatchingLocation();
-            } else {
-                requestLocationPermission(); // Solicitar permissão antes de iniciar o monitoramento
-            }
-        });
     </script>
 </body>
 </html>
+
