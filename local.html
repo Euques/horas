@@ -54,7 +54,7 @@
             const distance = calculateDistance(userLatitude, userLongitude, targetLatitude, targetLongitude);
 
             const messageElement = document.getElementById("message");
-            if (distance <= 0.02) { // 0.02 km é equivalente a 20 metros
+            if (distance <= 0.04) { // 0.04 km é equivalente a 40 metros
                 messageElement.textContent = "Você está no Inova Bar.";
                 messageElement.classList.add("green");
             } else {
